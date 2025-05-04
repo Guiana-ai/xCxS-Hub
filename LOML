@@ -1,62 +1,44 @@
-local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
-local Window = OrionLib:MakeWindow({Name = "xCxS Hub", HidePremium = false, SaveConfig = true, ConfigFolder = "SwiftSamuraiConfig", IntroEnabled = false})
+local success, OrionLib = pcall(function()
+    return loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
+end)
 
--- Draggable UI
-Window:SetDraggable(true)
+if not success or not OrionLib then
+    warn("Failed to load OrionLib. Check your internet connection or if the URL is correct.")
+    return
+end
 
--- Minimize Button
-Window:AddButton({Name = "Minimize UI", Callback = function()
-    Window:Toggle()
-end})
+local Window = OrionLib:MakeWindow({Name = "Legends of Speed Hub", HidePremium = false, SaveConfig = true, ConfigFolder = "SpeedConfig", IntroEnabled = false})
 
--- Color Picker for UI Theme
-Window:AddColorPicker({
-    Name = "Choose UI Color",
-    Default = Color3.fromRGB(255, 0, 0),
-    Callback = function(color)
-        Window:SetTheme(color)
-    end
-})
+local AutofarmOPTab = Window:MakeTab({Name = "Auto Orb Farm", Icon = "rbxassetid://4483345998", PremiumOnly = false})
 
-local AutofarmOPTab = Window:MakeTab({Name = "Autofarm OP", Icon = "rbxassetid://4483345998", PremiumOnly = false})
-
--- Correct Orb List
+-- Refined List of Real Orbs
 local orbs = {"Red Orb", "Blue Orb", "Yellow Orb", "Orange Orb", "Ethereal Orb"}
-local selectedOrb = "Red Orb"
-local delaySpeed = 1
+local selectedOrb = orbs[1] -- Default selection
 
 AutofarmOPTab:AddDropdown({
     Name = "Select Orb Type",
-    Default = "Red Orb",
+    Default = orbs[1],
     Options = orbs,
     Callback = function(option)
         selectedOrb = option
     end
 })
 
-AutofarmOPTab:AddSlider({
-    Name = "Choose Orb Delay (1 to 1,000,000)",
-    Min = 1,
-    Max = 1000000,
-    Default = 1,
-    Callback = function(value)
-        delaySpeed = value / 1000000
-    end
-})
-
-AutofarmOPTab:AddButton({Name = "Start Auto-Orb Farm", Callback = function()
-    while true do
-        for _,v in pairs(game.Workspace:GetChildren()) do
-            if v:IsA("Part") and v.Name == selectedOrb then
-                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.CFrame
-                wait(delaySpeed)
+AutofarmOPTab:AddToggle({
+    Name = "Auto Collect Selected Orb",
+    Default = false,
+    Callback = function(enabled)
+        while enabled and task.wait() do
+            local player = game.Players.LocalPlayer
+            if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                for _, v in ipairs(game.Workspace:GetChildren()) do
+                    if v:IsA("Part") and v.Name == selectedOrb then
+                        player.Character.HumanoidRootPart.CFrame = v.CFrame
+                    end
+                end
             end
         end
     end
-end})
-
--- Orb Calculator (Updated)
-local OrbCalculatorTab = Window:MakeTab({Name = "Orb Calculator", Icon = "rbxassetid://4483345998", PremiumOnly = false})
-OrbCalculatorTab:AddLabel("Calculate Orb Boosts & Benefits!")
+})
 
 OrionLib:Init()
